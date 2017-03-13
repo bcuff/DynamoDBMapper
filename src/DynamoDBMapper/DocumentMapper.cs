@@ -55,7 +55,55 @@ namespace DynamoDBMapper
 
         private Func<object, Dictionary<string, AttributeValue>> CreateToAttributesFunc(Type type)
         {
-            return o => { throw new NotImplementedException(); };
+            var obj = Expression.Parameter(typeof(object), "document");
+            var document = Expression.Variable(type, "doc");
+            var result = Expression.Variable(typeof(Dictionary<string, AttributeValue>), "result");
+            var add = typeof(Dictionary<string, AttributeValue>).GetMethod("Add", new[] { typeof(string), typeof(AttributeValue) });
+            var steps = new List<Expression>();
+            var tempVariables = new Dictionary<Type, ParameterExpression>();
+            steps.Add(Expression.Assign(document, Expression.ConvertChecked(obj, type)));
+            steps.Add(Expression.Assign(result, Expression.New(result.Type)));
+            foreach (var spec in GetAttributeSpecifications(type))
+            {
+                if (spec.IsNullable)
+                {
+                    ParameterExpression temp;
+                    if (!tempVariables.TryGetValue(spec.Prop.PropertyType, out temp))
+                    {
+                        temp = Expression.Variable(spec.Prop.PropertyType);
+                        tempVariables.Add(spec.Prop.PropertyType, temp);
+                    }
+                    steps.Add(Expression.Assign(temp, Expression.MakeMemberAccess(document, spec.Prop)));
+                    steps.Add(Expression.IfThen(
+                        Expression.NotEqual(temp, Expression.Constant(null)),
+                        Expression.Call(
+                            result,
+                            add,
+                            Expression.Constant(spec.AttributeName),
+                            Expression.Call(spec.Mapping.To, temp)
+                        )
+                    ));
+                }
+                else
+                {
+                    steps.Add(Expression.Call(
+                        result,
+                        add,
+                        Expression.Constant(spec.AttributeName),
+                        Expression.Call(spec.Mapping.To, Expression.MakeMemberAccess(document, spec.Prop))
+                    ));
+                }
+            }
+            steps.Add(result);
+            return Expression.Lambda<Func<object, Dictionary<string, AttributeValue>>>(
+                Expression.Block(
+                    typeof(Dictionary<string, AttributeValue>),
+                    new[] { document, result }.Concat(tempVariables.Values),
+                    steps
+                ),
+                obj
+            ).Compile();
+            //return o => { throw new NotImplementedException(); };
         }
 
         private Func<Dictionary<string, AttributeValue>, object> CreateToDocumentFunc(Type type)
@@ -122,9 +170,13 @@ namespace DynamoDBMapper
         private class AttributeSpec
         {
             public PropertyInfo Prop;
+            TypeInfo _typeInfo;
+            public TypeInfo TypeInfo => _typeInfo ?? (_typeInfo = Prop.PropertyType.GetTypeInfo());
             public DynamoDBRenamableAttribute Attribute;
             public AttributeMapping Mapping;
             public string AttributeName => Attribute?.AttributeName ?? Prop.Name;
+            bool? _isNullable;
+            public bool IsNullable => _isNullable ?? (_isNullable = TypeInfo.IsNullable()).Value;
         }
     }
 }

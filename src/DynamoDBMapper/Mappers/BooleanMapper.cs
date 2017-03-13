@@ -7,7 +7,7 @@ namespace DynamoDBMapper.Mappers
 {
     internal static class BooleanMapper
     {
-        public static AttributeValue ToAttributeValue(bool value) => new AttributeValue { BOOL = value };
+        public static AttributeValue ToAttributeValue(bool value) => new AttributeValue { N = value ? "1" : "0" };
         public static bool TryParseAttributeValue(AttributeValue value, out bool result)
         {
             if (value.IsBOOLSet)
