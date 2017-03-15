@@ -14,12 +14,12 @@ namespace DynamoDBMapper
     {
         static readonly Lazy<DocumentMapper> _default = new Lazy<DocumentMapper>(() => new DocumentMapperBuilder().WithDefaults().Create(), true);
         public static DocumentMapper Default => _default.Value;
-        readonly Dictionary<Type, AttributeMapping> _attributeMappings;
+        readonly IPropertyMapper[] _propertyMappers;
         readonly ConcurrentDictionary<Type, Lazy<DocumentMapping>> _mappings = new ConcurrentDictionary<Type, Lazy<DocumentMapping>>();
 
-        internal DocumentMapper(Dictionary<Type, AttributeMapping> AttributeMappings)
+        internal DocumentMapper(IEnumerable<IPropertyMapper> propertyMappers)
         {
-            _attributeMappings = new Dictionary<Type, AttributeMapping>(AttributeMappings);
+            _propertyMappers = propertyMappers.ToArray();
         }
 
         public Dictionary<string, AttributeValue> ToAttributes(object document)
@@ -65,22 +65,23 @@ namespace DynamoDBMapper
             steps.Add(Expression.Assign(result, Expression.New(result.Type)));
             foreach (var spec in GetAttributeSpecifications(type))
             {
+                var mapper = GetPropertyMapper(spec);
                 if (spec.IsNullable)
                 {
                     ParameterExpression temp;
-                    if (!tempVariables.TryGetValue(spec.Prop.PropertyType, out temp))
+                    if (!tempVariables.TryGetValue(spec.Property.PropertyType, out temp))
                     {
-                        temp = Expression.Variable(spec.Prop.PropertyType);
-                        tempVariables.Add(spec.Prop.PropertyType, temp);
+                        temp = Expression.Variable(spec.Property.PropertyType);
+                        tempVariables.Add(spec.Property.PropertyType, temp);
                     }
-                    steps.Add(Expression.Assign(temp, Expression.MakeMemberAccess(document, spec.Prop)));
+                    steps.Add(Expression.Assign(temp, Expression.MakeMemberAccess(document, spec.Property)));
                     steps.Add(Expression.IfThen(
                         Expression.NotEqual(temp, Expression.Constant(null)),
                         Expression.Call(
                             result,
                             add,
-                            Expression.Constant(spec.AttributeName),
-                            Expression.Call(spec.Mapping.To, temp)
+                            Expression.Constant(spec.Name),
+                            mapper.GetToAttributeValueExpression(spec, temp)
                         )
                     ));
                 }
@@ -89,8 +90,8 @@ namespace DynamoDBMapper
                     steps.Add(Expression.Call(
                         result,
                         add,
-                        Expression.Constant(spec.AttributeName),
-                        Expression.Call(spec.Mapping.To, Expression.MakeMemberAccess(document, spec.Prop))
+                        Expression.Constant(spec.Name),
+                        mapper.GetToAttributeValueExpression(spec, Expression.MakeMemberAccess(document, spec.Property))
                     ));
                 }
             }
@@ -103,7 +104,6 @@ namespace DynamoDBMapper
                 ),
                 obj
             ).Compile();
-            //return o => { throw new NotImplementedException(); };
         }
 
         private Func<Dictionary<string, AttributeValue>, object> CreateToDocumentFunc(Type type)
@@ -118,23 +118,18 @@ namespace DynamoDBMapper
             steps.Add(Expression.Assign(result, Expression.New(type)));
             foreach (var spec in GetAttributeSpecifications(type))
             {
+                var mapper = GetPropertyMapper(spec);
                 ParameterExpression temp;
-                if (!tempLocals.TryGetValue(spec.Prop.PropertyType, out temp))
+                if (!tempLocals.TryGetValue(spec.TargetType, out temp))
                 {
-                    temp = Expression.Variable(spec.Prop.PropertyType);
-                    tempLocals.Add(spec.Prop.PropertyType, temp);
+                    temp = Expression.Variable(spec.TargetType);
+                    tempLocals.Add(spec.TargetType, temp);
                 }
                 var expr = Expression.IfThen(
-                    Expression.Call(attributes, tryGetValue, Expression.Constant(spec.AttributeName), attributeValue),
-                    Expression.IfThenElse(
-                        Expression.Call(spec.Mapping.From, attributeValue, temp),
-                        Expression.Assign(
-                            Expression.MakeMemberAccess(result, spec.Prop),
-                            temp
-                        ),
-                        Expression.Throw(
-                            Expression.New(mapperExceptionCtor, Expression.Constant(spec.Prop.Name))
-                        )
+                    Expression.Call(attributes, tryGetValue, Expression.Constant(spec.Name), attributeValue),
+                    Expression.Assign(
+                        Expression.MakeMemberAccess(result, spec.Property),
+                        mapper.GetToDocumentPropertyExpression(spec, attributeValue)
                     )
                 );
                 steps.Add(expr);
@@ -153,30 +148,16 @@ namespace DynamoDBMapper
         private IEnumerable<AttributeSpec> GetAttributeSpecifications(Type type) =>
             from prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
             let attr = prop.GetCustomAttributes<DynamoDBRenamableAttribute>().FirstOrDefault()
-            select new AttributeSpec
+            select new AttributeSpec(prop, attr);
+
+        private IPropertyMapper GetPropertyMapper(AttributeSpec spec)
+        {
+            var mapper = _propertyMappers.FirstOrDefault(pm => pm.CanMap(spec));
+            if (mapper == null)
             {
-                Prop = prop,
-                Attribute = attr,
-                Mapping = GetAttributeMapping(prop, attr),
-            };
-
-        private AttributeMapping GetAttributeMapping(PropertyInfo prop, DynamoDBRenamableAttribute attr)
-        {
-            AttributeMapping attrMapping;
-            if (_attributeMappings.TryGetValue(prop.PropertyType, out attrMapping)) return attrMapping;
-            throw new NotSupportedException($"Mapping to {prop.DeclaringType.Name}.{prop.Name} failed because type, {prop.PropertyType.Name}, is not supported.");
-        }
-
-        private class AttributeSpec
-        {
-            public PropertyInfo Prop;
-            TypeInfo _typeInfo;
-            public TypeInfo TypeInfo => _typeInfo ?? (_typeInfo = Prop.PropertyType.GetTypeInfo());
-            public DynamoDBRenamableAttribute Attribute;
-            public AttributeMapping Mapping;
-            public string AttributeName => Attribute?.AttributeName ?? Prop.Name;
-            bool? _isNullable;
-            public bool IsNullable => _isNullable ?? (_isNullable = TypeInfo.IsNullable()).Value;
+                throw new NotSupportedException($"Mapping on {spec.TargetType} {spec.Property.DeclaringType.Name}.{spec.Property.Name} is not supported by this configuration.");
+            }
+            return mapper;
         }
     }
 }

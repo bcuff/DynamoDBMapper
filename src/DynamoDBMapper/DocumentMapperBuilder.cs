@@ -9,7 +9,7 @@ namespace DynamoDBMapper
 {
     public class DocumentMapperBuilder
     {
-        private readonly Dictionary<Type, AttributeMapping> _mappers = new Dictionary<Type, AttributeMapping>();
+        private readonly List<IPropertyMapper> _mappers = new List<IPropertyMapper>();
 
         public DocumentMapper Create() => new DocumentMapper(_mappers);
 
@@ -32,11 +32,7 @@ namespace DynamoDBMapper
             if (parseAttributeValueMethod == null) throw new ArgumentNullException(nameof(parseAttributeValueMethod));
             if (!IsToAttributeValueMethod(type, toAttributeValueMethod)) new ArgumentNullException(nameof(toAttributeValueMethod), "Invalid signature.");
             if (!IsParseAttributeValueMethod(type, parseAttributeValueMethod)) new ArgumentNullException(nameof(parseAttributeValueMethod), "Invalid signature.");
-            _mappers[type] = new AttributeMapping
-            {
-                To = toAttributeValueMethod,
-                From = parseAttributeValueMethod
-            };
+            _mappers.Add(new PrimitivePropertyMapper(type, toAttributeValueMethod, parseAttributeValueMethod));
             return this;
         }
 
