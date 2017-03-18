@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using Amazon.DynamoDBv2.Model;
 
-namespace DynamoDBMapper
+namespace DynamoDBMapper.TypeMappers
 {
     internal class NullableTypeMapper : ITypeMapper
     {

@@ -6,7 +6,7 @@ using System.Text;
 using Amazon.DynamoDBv2.DataModel;
 using Amazon.DynamoDBv2.Model;
 
-namespace DynamoDBMapper
+namespace DynamoDBMapper.TypeMappers
 {
     internal class PropertyConverterMapper : ITypeMapper
     {

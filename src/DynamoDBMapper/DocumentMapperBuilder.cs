@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using Amazon.DynamoDBv2.Model;
+using DynamoDBMapper.TypeMappers;
 
 namespace DynamoDBMapper
 {
