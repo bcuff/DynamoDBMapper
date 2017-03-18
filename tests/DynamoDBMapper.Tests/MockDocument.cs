@@ -12,5 +12,7 @@ namespace DynamoDBMapper.Tests
         public string String { get; set; }
         [DynamoDBProperty(Converter = typeof(StringReversingDynamoDBConverter))]
         public string ReversedString { get; set; }
+        [DynamoDBIgnore]
+        public string IgnoredField { get; set; }
     }
 }

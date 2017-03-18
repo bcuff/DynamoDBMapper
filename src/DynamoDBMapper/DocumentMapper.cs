@@ -148,6 +148,8 @@ namespace DynamoDBMapper
         private IEnumerable<AttributeSpec> GetAttributeSpecifications(Type type) =>
             from prop in type.GetProperties(BindingFlags.Public | BindingFlags.Instance)
             let attr = prop.GetCustomAttributes<DynamoDBRenamableAttribute>().FirstOrDefault()
+            let ignore = prop.GetCustomAttributes<DynamoDBIgnoreAttribute>().FirstOrDefault()
+            where ignore == null
             select new AttributeSpec(prop, attr);
 
         private IPropertyMapper GetPropertyMapper(AttributeSpec spec)
