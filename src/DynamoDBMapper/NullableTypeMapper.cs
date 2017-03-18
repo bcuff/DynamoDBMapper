@@ -10,9 +10,7 @@ namespace DynamoDBMapper
         public ITypeMapping GetTypeMapping(TypeSpec spec, IMapperGeneratorContext context)
         {
             ITypeMapping innerTypeMapping;
-            if (spec.TypeInfo.IsValueType
-                && spec.TypeInfo.IsGenericType
-                && spec.TypeInfo.GetGenericTypeDefinition() == typeof(Nullable<>))
+            if (spec.IsNullableValueType)
             {
                 var innerType = Nullable.GetUnderlyingType(spec.Type);
                 var innerSpec = new TypeSpec(innerType, spec.ConverterType);
@@ -57,14 +55,12 @@ namespace DynamoDBMapper
 
             public Expression GetToAttributeValueExpression(IMapperGeneratorContext context, Expression value)
             {
-                var temp = Expression.Variable(_spec.Type);
                 var result = Expression.Variable(typeof(AttributeValue));
                 return Expression.Block(
-                    new[] { temp, result },
-                    Expression.Assign(temp, value),
+                    new[] { result },
                     Expression.IfThenElse(
-                        Expression.MakeMemberAccess(temp, _spec.Type.GetProperty("HasValue")),
-                        Expression.Assign(result, _innerMapping.GetToAttributeValueExpression(context, Expression.MakeMemberAccess(temp, _spec.Type.GetProperty("Value")))),
+                        Expression.MakeMemberAccess(value, _spec.Type.GetProperty("HasValue")),
+                        Expression.Assign(result, _innerMapping.GetToAttributeValueExpression(context, Expression.MakeMemberAccess(value, _spec.Type.GetProperty("Value")))),
                         Expression.Block(
                             Expression.Assign(result, Expression.New(typeof(AttributeValue))),
                             Expression.Assign(

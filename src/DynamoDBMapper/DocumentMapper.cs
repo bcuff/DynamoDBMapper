@@ -68,7 +68,7 @@ namespace DynamoDBMapper
             {
                 context.PropertyName = spec.Property.Name;
                 var mapping = GetTypeMapping(spec, context);
-                if (!spec.TypeInfo.IsValueType)
+                if (!spec.TypeInfo.IsValueType || spec.IsNullableValueType)
                 {
                     // only call to attr expression if the property value is non-null
                     ParameterExpression temp;

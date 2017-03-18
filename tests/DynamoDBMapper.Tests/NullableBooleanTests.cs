@@ -33,5 +33,23 @@ namespace DynamoDBMapper.Tests
             var doc = Mapper.ToDocument<MockDocument>(before);
             Assert.Equal(expectedBooleanValue, doc.NullableBoolean);
         }
+
+        [Theory]
+        [InlineData(false, "0")]
+        [InlineData(true, "1")]
+        [InlineData(null, null)]
+        public static void NullableBoolean_fields_should_serialize_to_expected_values(bool? value, string expectedNValue)
+        {
+            var before = new MockDocument { NullableBoolean = value };
+            var after = Mapper.ToAttributes(before);
+            if (expectedNValue == null)
+            {
+                Assert.False(after.ContainsKey("NullableBoolean"));
+            }
+            else
+            {
+                Assert.Equal(expectedNValue, after["NullableBoolean"].N);
+            }
+        }
     }
 }
