@@ -15,6 +15,7 @@ namespace DynamoDBMapper.Tests
             { new AttributeValue { N = "0" }, false },
             { new AttributeValue { N = "1" }, true },
             { new AttributeValue { N = "-123" }, true },
+            { null, false },
         };
 
         static DocumentMapper Mapper => DocumentMapper.Default;
@@ -23,9 +24,10 @@ namespace DynamoDBMapper.Tests
         [MemberData(nameof(BooleanData))]
         public static void Boolean_fields_should_deserialize_with_expected_values(AttributeValue attribute, bool expectedBooleanValue)
         {
-            var before = new Dictionary<string, AttributeValue>
+            var before = new Dictionary<string, AttributeValue>();
+            if (attribute != null)
             {
-                { "Boolean", attribute }
+                before.Add("Boolean", attribute);
             };
             var doc = Mapper.ToDocument<MockDocument>(before);
             Assert.Equal(expectedBooleanValue, doc.Boolean);
