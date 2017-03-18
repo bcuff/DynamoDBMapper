@@ -29,7 +29,7 @@ namespace DynamoDBMapper
 
         public DocumentMapperBuilder WithPropertyConverters()
         {
-            _mappers.Add(new PropertyConverterMapper());
+            _mappers.Add(new PropertyConverterTypeMapper());
             return this;
         }
 
@@ -46,7 +46,7 @@ namespace DynamoDBMapper
             if (parseAttributeValueMethod == null) throw new ArgumentNullException(nameof(parseAttributeValueMethod));
             if (!IsToAttributeValueMethod(type, toAttributeValueMethod)) new ArgumentNullException(nameof(toAttributeValueMethod), "Invalid signature.");
             if (!IsParseAttributeValueMethod(type, parseAttributeValueMethod)) new ArgumentNullException(nameof(parseAttributeValueMethod), "Invalid signature.");
-            _mappers.Add(new PrimitivePropertyMapper(type, toAttributeValueMethod, parseAttributeValueMethod));
+            _mappers.Add(new PrimitiveTypeMapper(type, toAttributeValueMethod, parseAttributeValueMethod));
             return this;
         }
 

@@ -8,7 +8,7 @@ using Amazon.DynamoDBv2.Model;
 
 namespace DynamoDBMapper.TypeMappers
 {
-    internal class PropertyConverterMapper : ITypeMapper
+    internal class PropertyConverterTypeMapper : ITypeMapper
     {
         public ITypeMapping GetTypeMapping(TypeSpec spec, IMapperGeneratorContext context)
         {

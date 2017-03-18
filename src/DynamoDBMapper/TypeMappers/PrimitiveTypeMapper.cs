@@ -6,13 +6,13 @@ using System.Text;
 
 namespace DynamoDBMapper.TypeMappers
 {
-    internal class PrimitivePropertyMapper : ITypeMapper, ITypeMapping
+    internal class PrimitiveTypeMapper : ITypeMapper, ITypeMapping
     {
         Type _type;
         MethodInfo _toAttributeValueMethod;
         MethodInfo _tryParseAttributeValueMethod;
 
-        public PrimitivePropertyMapper(Type type, MethodInfo toAttributeValueMethod, MethodInfo tryParseAttributeValueMethod)
+        public PrimitiveTypeMapper(Type type, MethodInfo toAttributeValueMethod, MethodInfo tryParseAttributeValueMethod)
         {
             _type = type;
             _toAttributeValueMethod = toAttributeValueMethod;
