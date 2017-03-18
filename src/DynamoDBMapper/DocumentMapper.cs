@@ -66,7 +66,7 @@ namespace DynamoDBMapper
             foreach (var spec in GetAttributeSpecifications(type))
             {
                 var mapper = GetPropertyMapper(spec);
-                if (spec.IsNullable)
+                if (!spec.TargetTypeInfo.IsValueType)
                 {
                     ParameterExpression temp;
                     if (!tempVariables.TryGetValue(spec.Property.PropertyType, out temp))

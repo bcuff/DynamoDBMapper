@@ -10,18 +10,8 @@ namespace DynamoDBMapper
         public AttributeSpec(PropertyInfo prop, DynamoDBRenamableAttribute attribute)
         {
             var info = prop.PropertyType.GetTypeInfo();
-            if (info.IsNullable())
-            {
-                TargetType = Nullable.GetUnderlyingType(prop.PropertyType);
-                TargetTypeInfo = TargetType.GetTypeInfo();
-                IsNullable = true;
-            }
-            else
-            {
-                TargetType = prop.PropertyType;
-                TargetTypeInfo = info;
-                IsNullable = !TargetTypeInfo.IsValueType;
-            }
+            TargetType = prop.PropertyType;
+            TargetTypeInfo = info;
             Property = prop;
             Attribute = attribute;
             Name = attribute?.AttributeName ?? prop.Name;
@@ -33,7 +23,6 @@ namespace DynamoDBMapper
         public PropertyInfo Property { get; }
         public DynamoDBRenamableAttribute Attribute { get; }
         public string Name { get; }
-        public bool IsNullable { get; }
         public Type ConverterType { get; }
     }
 }
