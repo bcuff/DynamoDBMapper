@@ -13,5 +13,10 @@ namespace DynamoDBMapper
             : base($"Unable to parse document on property {propertyName}")
         {
         }
+
+        public DynamoDBMapperException(string propertyName, string additionalInformation)
+            : base($"Unable to parse document on property {propertyName} - {additionalInformation}")
+        {
+        }
     }
 }

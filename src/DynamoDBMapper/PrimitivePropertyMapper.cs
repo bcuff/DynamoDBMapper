@@ -20,7 +20,7 @@ namespace DynamoDBMapper
         }
 
         public bool CanMap(AttributeSpec spec)
-            => spec.TargetType == _type;
+            => spec.TargetType == _type && spec.ConverterType == null;
 
         public Expression GetToAttributeValueExpression(AttributeSpec spec, Expression propertyValue)
         {

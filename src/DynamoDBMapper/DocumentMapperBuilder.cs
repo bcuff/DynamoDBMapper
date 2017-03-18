@@ -16,12 +16,13 @@ namespace DynamoDBMapper
         public DocumentMapperBuilder WithDefaults()
         {
             var q = from type in GetType().GetTypeInfo().Assembly.GetTypes()
-                    where type.Namespace == "DynamoDBMapper.Mappers"
+                    where type.Namespace == "DynamoDBMapper.Mappers" && !type.IsNested
                     select type;
             foreach (var type in q)
             {
                 WithMapperType(type);
             }
+            _mappers.Add(new PropertyConverterMapper());
             return this;
         }
 

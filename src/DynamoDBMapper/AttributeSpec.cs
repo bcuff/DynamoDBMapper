@@ -25,6 +25,7 @@ namespace DynamoDBMapper
             Property = prop;
             Attribute = attribute;
             Name = attribute?.AttributeName ?? prop.Name;
+            ConverterType = (attribute as DynamoDBPropertyAttribute)?.Converter;
         }
 
         public Type TargetType { get; }
@@ -33,5 +34,6 @@ namespace DynamoDBMapper
         public DynamoDBRenamableAttribute Attribute { get; }
         public string Name { get; }
         public bool IsNullable { get; }
+        public Type ConverterType { get; }
     }
 }
