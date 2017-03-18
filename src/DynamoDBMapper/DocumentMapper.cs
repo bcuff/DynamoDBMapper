@@ -67,7 +67,7 @@ namespace DynamoDBMapper
             foreach (var spec in GetAttributeSpecifications(type))
             {
                 context.PropertyName = spec.Property.Name;
-                var mapping = GetTypeMapping(spec);
+                var mapping = GetTypeMapping(spec, context);
                 if (!spec.TypeInfo.IsValueType)
                 {
                     // only call to attr expression if the property value is non-null
@@ -123,7 +123,7 @@ namespace DynamoDBMapper
             foreach (var spec in GetAttributeSpecifications(type))
             {
                 context.PropertyName = spec.Property.Name;
-                var mapping = GetTypeMapping(spec);
+                var mapping = GetTypeMapping(spec, context);
                 ParameterExpression temp;
                 if (!tempLocals.TryGetValue(spec.Type, out temp))
                 {
@@ -157,9 +157,9 @@ namespace DynamoDBMapper
             where ignore == null
             select new AttributeSpec(prop, attr);
 
-        private ITypeMapping GetTypeMapping(TypeSpec spec)
+        private ITypeMapping GetTypeMapping(TypeSpec spec, IMapperGeneratorContext context)
         {
-            var mapping = _propertyMappers.Select(v => v.GetTypeMapping(spec)).FirstOrDefault(tm => tm != null);
+            var mapping = _propertyMappers.Select(v => v.GetTypeMapping(spec, context)).FirstOrDefault(tm => tm != null);
             if (mapping == null)
             {
                 throw new NotSupportedException($"Mapping on {spec.Type} is not supported by this configuration.");
@@ -178,7 +178,7 @@ namespace DynamoDBMapper
 
             public string PropertyName { get; set; }
 
-            public ITypeMapping GetMapping(TypeSpec typeSpec) => _owner.GetTypeMapping(typeSpec);
+            public ITypeMapping GetMapping(TypeSpec typeSpec) => _owner.GetTypeMapping(typeSpec, this);
 
             public Expression GetThrowExpression() =>
                 Expression.Throw(

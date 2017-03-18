@@ -8,6 +8,7 @@ namespace DynamoDBMapper.Tests
     public class MockDocument
     {
         public bool Boolean { get; set; }
+        public bool? NullableBoolean { get; set; }
         public int Int32 { get; set; }
         public string String { get; set; }
         [DynamoDBProperty(Converter = typeof(StringReversingDynamoDBConverter))]

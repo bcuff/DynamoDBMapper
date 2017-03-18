@@ -20,5 +20,7 @@ namespace DynamoDBMapper
         public Type Type { get; }
         public TypeInfo TypeInfo { get; }
         public Type ConverterType { get; }
+
+        public override string ToString() => ConverterType == null ? Type.Name : $"{Type.Name} Converter={ConverterType.Name}";
     }
 }

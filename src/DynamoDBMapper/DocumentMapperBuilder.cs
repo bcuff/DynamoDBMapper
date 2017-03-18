@@ -15,6 +15,8 @@ namespace DynamoDBMapper
 
         public DocumentMapperBuilder WithDefaults()
         {
+            WithPropertyConverters();
+            WithNullables();
             var q = from type in GetType().GetTypeInfo().Assembly.GetTypes()
                     where type.Namespace == "DynamoDBMapper.Mappers" && !type.IsNested
                     select type;
@@ -22,7 +24,18 @@ namespace DynamoDBMapper
             {
                 WithMapperType(type);
             }
+            return this;
+        }
+
+        public DocumentMapperBuilder WithPropertyConverters()
+        {
             _mappers.Add(new PropertyConverterMapper());
+            return this;
+        }
+
+        public DocumentMapperBuilder WithNullables()
+        {
+            _mappers.Add(new NullableTypeMapper());
             return this;
         }
 

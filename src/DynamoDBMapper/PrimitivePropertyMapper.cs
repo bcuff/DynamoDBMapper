@@ -19,7 +19,7 @@ namespace DynamoDBMapper
             _tryParseAttributeValueMethod = tryParseAttributeValueMethod;
         }
 
-        public ITypeMapping GetTypeMapping(TypeSpec spec)
+        public ITypeMapping GetTypeMapping(TypeSpec spec, IMapperGeneratorContext context)
             => spec.Type == _type && spec.ConverterType == null ? this : null;
 
         public Expression GetFromAttributeValueExpression(IMapperGeneratorContext context, Expression attributeValue)

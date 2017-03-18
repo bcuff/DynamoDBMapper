@@ -10,7 +10,7 @@ namespace DynamoDBMapper
 {
     internal class PropertyConverterMapper : ITypeMapper
     {
-        public ITypeMapping GetTypeMapping(TypeSpec spec)
+        public ITypeMapping GetTypeMapping(TypeSpec spec, IMapperGeneratorContext context)
         {
             if (spec.ConverterType == null) return null;
             var converterTypeInfo = spec.ConverterType.GetTypeInfo();

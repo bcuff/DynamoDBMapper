@@ -8,6 +8,6 @@ namespace DynamoDBMapper
 {
     internal interface ITypeMapper
     {
-        ITypeMapping GetTypeMapping(TypeSpec spec);
+        ITypeMapping GetTypeMapping(TypeSpec spec, IMapperGeneratorContext context);
     }
 }
