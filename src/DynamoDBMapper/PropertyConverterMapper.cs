@@ -37,7 +37,7 @@ namespace DynamoDBMapper
 
             public Expression GetFromAttributeValueExpression(IMapperGeneratorContext context, Expression attributeValue)
             {
-                var method = typeof(ConverterMapper).GetMethod("TryParseAttributeValue", BindingFlags.Static | BindingFlags.Public)
+                var method = typeof(GenericMappers.ConverterMapper).GetMethod("TryParseAttributeValue", BindingFlags.Static | BindingFlags.Public)
                     .MakeGenericMethod(_spec.ConverterType, _spec.Type);
                 var temp = Expression.Variable(_spec.Type);
                 return Expression.Block(
@@ -52,7 +52,7 @@ namespace DynamoDBMapper
 
             public Expression GetToAttributeValueExpression(IMapperGeneratorContext context, Expression value)
             {
-                var method = typeof(ConverterMapper).GetMethod("ToAttributeValue", BindingFlags.Static | BindingFlags.Public)
+                var method = typeof(GenericMappers.ConverterMapper).GetMethod("ToAttributeValue", BindingFlags.Static | BindingFlags.Public)
                     .MakeGenericMethod(_spec.ConverterType, _spec.Type);
                 return Expression.Call(method, value);
             }

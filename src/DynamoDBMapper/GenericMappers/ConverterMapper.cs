@@ -6,7 +6,7 @@ using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
 using DynamoDBMapper.Mappers;
 
-namespace DynamoDBMapper
+namespace DynamoDBMapper.GenericMappers
 {
     internal static class ConverterMapper
     {
