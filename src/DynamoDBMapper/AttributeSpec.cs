@@ -5,24 +5,18 @@ using Amazon.DynamoDBv2.DataModel;
 
 namespace DynamoDBMapper
 {
-    internal class AttributeSpec
+    internal class AttributeSpec : TypeSpec
     {
         public AttributeSpec(PropertyInfo prop, DynamoDBRenamableAttribute attribute)
+            : base(prop.PropertyType, (attribute as DynamoDBPropertyAttribute)?.Converter)
         {
-            var info = prop.PropertyType.GetTypeInfo();
-            TargetType = prop.PropertyType;
-            TargetTypeInfo = info;
             Property = prop;
             Attribute = attribute;
             Name = attribute?.AttributeName ?? prop.Name;
-            ConverterType = (attribute as DynamoDBPropertyAttribute)?.Converter;
         }
 
-        public Type TargetType { get; }
-        public TypeInfo TargetTypeInfo { get; }
         public PropertyInfo Property { get; }
         public DynamoDBRenamableAttribute Attribute { get; }
         public string Name { get; }
-        public Type ConverterType { get; }
     }
 }

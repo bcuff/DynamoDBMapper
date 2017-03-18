@@ -9,7 +9,7 @@ namespace DynamoDBMapper
 {
     public class DocumentMapperBuilder
     {
-        private readonly List<IPropertyMapper> _mappers = new List<IPropertyMapper>();
+        private readonly List<ITypeMapper> _mappers = new List<ITypeMapper>();
 
         public DocumentMapper Create() => new DocumentMapper(_mappers);
 

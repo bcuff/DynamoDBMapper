@@ -8,51 +8,54 @@ using Amazon.DynamoDBv2.Model;
 
 namespace DynamoDBMapper
 {
-    internal class PropertyConverterMapper : IPropertyMapper
+    internal class PropertyConverterMapper : ITypeMapper
     {
-        public bool CanMap(AttributeSpec spec)
+        public ITypeMapping GetTypeMapping(TypeSpec spec)
         {
-            var converterType = (spec.Attribute as DynamoDBPropertyAttribute)?.Converter;
-            if (converterType != null)
+            if (spec.ConverterType == null) return null;
+            var converterTypeInfo = spec.ConverterType.GetTypeInfo();
+            if (!typeof(IPropertyConverter).GetTypeInfo().IsAssignableFrom(converterTypeInfo))
             {
-                if (!typeof(IPropertyConverter).GetTypeInfo().IsAssignableFrom(converterType.GetTypeInfo()))
-                {
-                    throw new DynamoDBMapperException(spec.Property.Name, $"Converter of type {converterType.Name} does not implement {nameof(IPropertyConverter)}");
-                }
-                var ctor = converterType.GetConstructor(Type.EmptyTypes);
-                if (ctor == null || !ctor.IsPublic)
-                {
-                    throw new DynamoDBMapperException(spec.Property.Name, $"Converter of type {converterType.Name} does not have a public default constructor.");
-                }
-                return true;
+                throw new ArgumentException($"Converter of type {spec.ConverterType.Name} does not implement {nameof(IPropertyConverter)}", nameof(spec));
             }
-            return false;
+            var ctor = spec.ConverterType.GetConstructor(Type.EmptyTypes);
+            if (ctor == null || !ctor.IsPublic)
+            {
+                throw new ArgumentException($"Converter of type {spec.ConverterType.Name} does not have a public default constructor.", nameof(spec));
+            }
+            return new PropertyConverterTypeMapping(spec);
         }
 
-        public Expression GetToAttributeValueExpression(AttributeSpec spec, Expression propertyValue)
+        private class PropertyConverterTypeMapping : ITypeMapping
         {
-            var converterType = ((DynamoDBPropertyAttribute)spec.Attribute).Converter;
-            var method = typeof(ConverterMapper).GetMethod("ToAttributeValue", BindingFlags.Static | BindingFlags.Public)
-                .MakeGenericMethod(converterType, spec.Property.PropertyType);
-            return Expression.Call(method, propertyValue);
-        }
+            readonly TypeSpec _spec;
 
-        public Expression GetToDocumentPropertyExpression(AttributeSpec spec, Expression attributeValue)
-        {
-            var converterType = ((DynamoDBPropertyAttribute)spec.Attribute).Converter;
-            var method = typeof(ConverterMapper).GetMethod("TryParseAttributeValue", BindingFlags.Static | BindingFlags.Public)
-                .MakeGenericMethod(converterType, spec.Property.PropertyType);
-            var temp = Expression.Variable(spec.TargetType);
-            return Expression.Block(
-                new[] { temp },
-                Expression.IfThen(
-                    Expression.Not(Expression.Call(method, attributeValue, temp)),
-                    Expression.Throw(
-                        Expression.New(DynamoDBMapperException.Constructor, Expression.Constant(spec.Property.Name))
-                    )
-                ),
-                temp
-            );
+            public PropertyConverterTypeMapping(TypeSpec spec)
+            {
+                _spec = spec;
+            }
+
+            public Expression GetFromAttributeValueExpression(IMapperGeneratorContext context, Expression attributeValue)
+            {
+                var method = typeof(ConverterMapper).GetMethod("TryParseAttributeValue", BindingFlags.Static | BindingFlags.Public)
+                    .MakeGenericMethod(_spec.ConverterType, _spec.Type);
+                var temp = Expression.Variable(_spec.Type);
+                return Expression.Block(
+                    new[] { temp },
+                    Expression.IfThen(
+                        Expression.Not(Expression.Call(method, attributeValue, temp)),
+                        context.GetThrowExpression()
+                    ),
+                    temp
+                );
+            }
+
+            public Expression GetToAttributeValueExpression(IMapperGeneratorContext context, Expression value)
+            {
+                var method = typeof(ConverterMapper).GetMethod("ToAttributeValue", BindingFlags.Static | BindingFlags.Public)
+                    .MakeGenericMethod(_spec.ConverterType, _spec.Type);
+                return Expression.Call(method, value);
+            }
         }
     }
 }

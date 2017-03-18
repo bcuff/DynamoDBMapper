@@ -6,7 +6,7 @@ using System.Text;
 
 namespace DynamoDBMapper
 {
-    internal class PrimitivePropertyMapper : IPropertyMapper
+    internal class PrimitivePropertyMapper : ITypeMapper, ITypeMapping
     {
         Type _type;
         MethodInfo _toAttributeValueMethod;
@@ -19,27 +19,25 @@ namespace DynamoDBMapper
             _tryParseAttributeValueMethod = tryParseAttributeValueMethod;
         }
 
-        public bool CanMap(AttributeSpec spec)
-            => spec.TargetType == _type && spec.ConverterType == null;
+        public ITypeMapping GetTypeMapping(TypeSpec spec)
+            => spec.Type == _type && spec.ConverterType == null ? this : null;
 
-        public Expression GetToAttributeValueExpression(AttributeSpec spec, Expression propertyValue)
+        public Expression GetFromAttributeValueExpression(IMapperGeneratorContext context, Expression attributeValue)
         {
-            return Expression.Call(_toAttributeValueMethod, propertyValue);
-        }
-
-        public Expression GetToDocumentPropertyExpression(AttributeSpec spec, Expression attributeValue)
-        {
-            var temp = Expression.Variable(spec.TargetType);
+            var temp = Expression.Variable(_type);
             return Expression.Block(
                 new[] { temp },
                 Expression.IfThen(
                     Expression.Not(Expression.Call(_tryParseAttributeValueMethod, attributeValue, temp)),
-                    Expression.Throw(
-                        Expression.New(DynamoDBMapperException.Constructor, Expression.Constant(spec.Property.Name))
-                    )
+                    context.GetThrowExpression()
                 ),
                 temp
             );
+        }
+
+        public Expression GetToAttributeValueExpression(IMapperGeneratorContext context, Expression value)
+        {
+            return Expression.Call(_toAttributeValueMethod, value);
         }
     }
 }
