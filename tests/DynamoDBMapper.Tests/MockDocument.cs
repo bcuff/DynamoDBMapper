@@ -17,6 +17,7 @@ namespace DynamoDBMapper.Tests
         public string ReversedString { get; set; }
         [DynamoDBIgnore]
         public string IgnoredField { get; set; }
+        public double[] DoubleArray { get; set; }
     }
 
     public enum MockEnum : int

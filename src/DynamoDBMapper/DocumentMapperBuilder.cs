@@ -25,6 +25,13 @@ namespace DynamoDBMapper
             {
                 WithMapperType(type);
             }
+            WithNumericalArrays();
+            return this;
+        }
+
+        public DocumentMapperBuilder WithNumericalArrays()
+        {
+            _mappers.Add(new NumericalArrayTypeMapper());
             return this;
         }
 
