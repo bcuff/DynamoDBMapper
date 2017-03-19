@@ -27,12 +27,19 @@ namespace DynamoDBMapper
             }
             WithNumericalArraysAsNumberSets();
             WithStringColletionsAsStringSets();
+            WithBinaryColletionsAsBinarySets();
             return this;
         }
 
         public DocumentMapperBuilder WithStringColletionsAsStringSets()
         {
             _mappers.Add(new StringCollectionTypeMapper());
+            return this;
+        }
+
+        public DocumentMapperBuilder WithBinaryColletionsAsBinarySets()
+        {
+            _mappers.Add(new BinaryCollectionTypeMapper());
             return this;
         }
 

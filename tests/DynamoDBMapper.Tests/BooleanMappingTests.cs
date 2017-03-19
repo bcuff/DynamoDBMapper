@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 using Amazon.DynamoDBv2.Model;
 using Xunit;
 
