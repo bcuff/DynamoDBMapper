@@ -25,11 +25,18 @@ namespace DynamoDBMapper
             {
                 WithMapperType(type);
             }
-            WithNumericalArrays();
+            WithNumericalArraysAsNumberSets();
+            WithStringColletionsAsStringSets();
             return this;
         }
 
-        public DocumentMapperBuilder WithNumericalArrays()
+        public DocumentMapperBuilder WithStringColletionsAsStringSets()
+        {
+            _mappers.Add(new StringCollectionTypeMapper());
+            return this;
+        }
+
+        public DocumentMapperBuilder WithNumericalArraysAsNumberSets()
         {
             _mappers.Add(new NumericalArrayTypeMapper());
             return this;
