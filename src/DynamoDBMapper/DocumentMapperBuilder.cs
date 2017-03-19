@@ -17,6 +17,7 @@ namespace DynamoDBMapper
         {
             WithPropertyConverters();
             WithNullables();
+            WithEnumerations();
             var q = from type in GetType().GetTypeInfo().Assembly.GetTypes()
                     where type.Namespace == "DynamoDBMapper.Mappers" && !type.IsNested
                     select type;
@@ -36,6 +37,12 @@ namespace DynamoDBMapper
         public DocumentMapperBuilder WithNullables()
         {
             _mappers.Add(new NullableTypeMapper());
+            return this;
+        }
+
+        public DocumentMapperBuilder WithEnumerations()
+        {
+            _mappers.Add(new EnumTypeMapper());
             return this;
         }
 

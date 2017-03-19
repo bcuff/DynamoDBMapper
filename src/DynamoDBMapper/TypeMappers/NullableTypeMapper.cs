@@ -9,7 +9,6 @@ namespace DynamoDBMapper.TypeMappers
     {
         public ITypeMapping GetTypeMapping(TypeSpec spec, IMapperGeneratorContext context)
         {
-            ITypeMapping innerTypeMapping;
             if (spec.IsNullableValueType)
             {
                 var innerType = Nullable.GetUnderlyingType(spec.Type);
