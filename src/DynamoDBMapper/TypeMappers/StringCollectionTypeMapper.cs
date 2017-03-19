@@ -19,36 +19,7 @@ namespace DynamoDBMapper.TypeMappers
                     return new StringCollectionTypeMapping(spec);
                 }
             }
-            else if (spec.Type == typeof(string[]))
-            {
-                return new StringArrayTypeMapping();
-            }
             return null;
-        }
-
-        private class StringArrayTypeMapping : ITypeMapping
-        {
-            public Expression GetFromAttributeValueExpression(IMapperGeneratorContext context, Expression attributeValue)
-            {
-                var method = typeof(GenericMappers.StringArrayMapper)
-                    .GetMethod(nameof(GenericMappers.StringArrayMapper.FromAttributeValue));
-                var temp = Expression.Variable(typeof(string[]));
-                return Expression.Block(
-                    new[] { temp },
-                    Expression.IfThen(
-                        Expression.Not(Expression.Call(method, attributeValue, temp)),
-                        context.GetThrowExpression()
-                    ),
-                    temp
-                );
-            }
-
-            public Expression GetToAttributeValueExpression(IMapperGeneratorContext context, Expression value)
-            {
-                var method = typeof(GenericMappers.StringArrayMapper)
-                    .GetMethod(nameof(GenericMappers.StringArrayMapper.ToAttributeValue));
-                return Expression.Call(method, value);
-            }
         }
 
         private class StringCollectionTypeMapping : ITypeMapping
