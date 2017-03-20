@@ -3,6 +3,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard1.3</TargetFramework>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Description>DynamoDB type to attribute dictionary mapper. This is a faster alternative to the aws-sdk high-level client and is meant to be used with the low-level client.</Description>
+    <PackageLicenseUrl></PackageLicenseUrl>
+    <PackageTags>dynamodb AWS aws-sdk Amazon</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
