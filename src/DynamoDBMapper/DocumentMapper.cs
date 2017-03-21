@@ -58,6 +58,7 @@ namespace DynamoDBMapper
             var obj = Expression.Parameter(typeof(object), "document");
             var document = Expression.Variable(type, "doc");
             var result = Expression.Variable(typeof(Dictionary<string, AttributeValue>), "result");
+            var attributeValue = Expression.Variable(typeof(AttributeValue));
             var add = typeof(Dictionary<string, AttributeValue>).GetMethod("Add", new[] { typeof(string), typeof(AttributeValue) });
             var steps = new List<Expression>();
             var tempVariables = new Dictionary<Type, ParameterExpression>();
@@ -80,21 +81,34 @@ namespace DynamoDBMapper
                     steps.Add(Expression.Assign(temp, Expression.MakeMemberAccess(document, spec.Property)));
                     steps.Add(Expression.IfThen(
                         Expression.NotEqual(temp, Expression.Constant(null)),
-                        Expression.Call(
-                            result,
-                            add,
-                            Expression.Constant(spec.Name),
-                            mapping.GetToAttributeValueExpression(context, temp)
+                        Expression.Block(
+                            Expression.Assign(attributeValue, mapping.GetToAttributeValueExpression(context, temp)),
+                            Expression.IfThen(
+                                Expression.NotEqual(attributeValue, Expression.Constant(null)),
+                                Expression.Call(
+                                    result,
+                                    add,
+                                    Expression.Constant(spec.Name),
+                                    attributeValue
+                                )
+                            )
                         )
                     ));
                 }
                 else
                 {
-                    steps.Add(Expression.Call(
-                        result,
-                        add,
-                        Expression.Constant(spec.Name),
-                        mapping.GetToAttributeValueExpression(context, Expression.MakeMemberAccess(document, spec.Property))
+                    steps.Add(Expression.Assign(
+                        attributeValue,
+                        mapping.GetToAttributeValueExpression(context, Expression.MakeMemberAccess(document, spec.Property)))
+                    );
+                    steps.Add(Expression.IfThen(
+                        Expression.NotEqual(attributeValue, Expression.Constant(null)),
+                        Expression.Call(
+                            result,
+                            add,
+                            Expression.Constant(spec.Name),
+                            attributeValue
+                        )
                     ));
                 }
             }
@@ -102,7 +116,7 @@ namespace DynamoDBMapper
             return Expression.Lambda<Func<object, Dictionary<string, AttributeValue>>>(
                 Expression.Block(
                     typeof(Dictionary<string, AttributeValue>),
-                    new[] { document, result }.Concat(tempVariables.Values),
+                    new[] { document, result, attributeValue }.Concat(tempVariables.Values),
                     steps
                 ),
                 obj
@@ -111,7 +125,6 @@ namespace DynamoDBMapper
 
         private Func<Dictionary<string, AttributeValue>, object> CreateToDocumentFunc(Type type)
         {
-            var mapperExceptionCtor = typeof(DynamoDBMapperException).GetConstructor(new[] { typeof(string) });
             var attributes = Expression.Parameter(typeof(Dictionary<string, AttributeValue>), "attributes");
             var attributeValue = Expression.Variable(typeof(AttributeValue), "attributeValue");
             var result = Expression.Variable(type, "result");

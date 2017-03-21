@@ -15,18 +15,18 @@ namespace DynamoDBMapper.Mappers
             {
                 case DynamoDBEntryType.String:
                     stringValue = primitive.Value as string;
-                    if (stringValue == null) return null;
+                    if (string.IsNullOrEmpty(stringValue)) return null;
                     return new AttributeValue { S = stringValue };
                 case DynamoDBEntryType.Numeric:
                     stringValue = primitive.Value as string;
-                    if (stringValue == null) return null;
+                    if (string.IsNullOrEmpty(stringValue)) return null;
                     return new AttributeValue { N = stringValue };
                 case DynamoDBEntryType.Binary:
                     var bytes = primitive.Value as byte[];
                     if (bytes == null) return null;
                     return new AttributeValue { B = new MemoryStream(bytes) };
             }
-            return null;
+            throw new ArgumentException("Invalid primitive", nameof(primitive));
         }
 
         public static bool TryParseAttributeValue(AttributeValue value, out Primitive result)

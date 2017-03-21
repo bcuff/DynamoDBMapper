@@ -7,7 +7,7 @@ namespace DynamoDBMapper.Mappers
 {
     internal static class StringMapper
     {
-        public static AttributeValue ToAttributeValue(string value) => new AttributeValue { S = value };
+        public static AttributeValue ToAttributeValue(string value) => string.IsNullOrEmpty(value) ? null : new AttributeValue { S = value };
         public static bool TryParseAttributeValue(AttributeValue value, out string result)
         {
             if (value.S != null)
