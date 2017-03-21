@@ -25,7 +25,7 @@ namespace DynamoDBMapper
             {
                 WithMapperType(type);
             }
-            WithNumericalArraysAsNumberSets();
+            WithNumericalCollectionsAsNumberSets();
             WithStringColletionsAsStringSets();
             WithBinaryColletionsAsBinarySets();
             return this;
@@ -43,9 +43,10 @@ namespace DynamoDBMapper
             return this;
         }
 
-        public DocumentMapperBuilder WithNumericalArraysAsNumberSets()
+        public DocumentMapperBuilder WithNumericalCollectionsAsNumberSets()
         {
             _mappers.Add(new NumericalArrayTypeMapper());
+            _mappers.Add(new NumericalCollectionTypeMapper());
             return this;
         }
 
