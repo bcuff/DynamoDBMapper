@@ -4,12 +4,17 @@
     <TargetFrameworks>net45;netstandard1.3</TargetFrameworks>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Description>DynamoDB type to attribute dictionary mapper. This is a faster alternative to the aws-sdk high-level client and is meant to be used with the low-level client.</Description>
-    <PackageLicenseUrl></PackageLicenseUrl>
+    <PackageLicenseUrl>https://github.com/bcuff/DynamoDBMapper/blob/master/LICENSE</PackageLicenseUrl>
     <PackageTags>dynamodb AWS aws-sdk Amazon</PackageTags>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
     <AssemblyVersion>1.0.1.0</AssemblyVersion>
     <FileVersion>1.0.1.0</FileVersion>
     <Version>1.0.1</Version>
+    <PackageProjectUrl>https://github.com/bcuff/DynamoDBMapper</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/bcuff/DynamoDBMapper</RepositoryUrl>
+    <Authors>bcuff</Authors>
+    <Company>bcuff</Company>
+    <Copyright>2017</Copyright>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
