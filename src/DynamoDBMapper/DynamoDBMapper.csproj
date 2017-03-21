@@ -7,6 +7,9 @@
     <PackageLicenseUrl></PackageLicenseUrl>
     <PackageTags>dynamodb AWS aws-sdk Amazon</PackageTags>
     <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
+    <AssemblyVersion>1.0.1.0</AssemblyVersion>
+    <FileVersion>1.0.1.0</FileVersion>
+    <Version>1.0.1</Version>
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net45' ">
